@@ -36,20 +36,16 @@ class CallReceiver : BroadcastReceiver() {
     private fun playVipRingtone(context: Context) {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
-        // Salva il volume precedente
         if (originalVolume == -1) {
             originalVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
         }
 
-        // Alza il volume suoneria al massimo
         val maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING)
         audioManager.setStreamVolume(AudioManager.STREAM_RING, maxVol, 0)
 
-        // Riproduce la suoneria usando USAGE_ALARM per scavalcare il 'Non Disturbare'
         val ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
 
-        mediaPlayer = MediaPlayer().apply {
-            setContext(context, ringtoneUri)
+        mediaPlayer = MediaPlayer.create(context, ringtoneUri)?.apply {
             setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_ALARM)
@@ -57,7 +53,6 @@ class CallReceiver : BroadcastReceiver() {
                     .build()
             )
             isLooping = true
-            prepare()
             start()
         }
     }
@@ -71,7 +66,6 @@ class CallReceiver : BroadcastReceiver() {
         }
         mediaPlayer = null
 
-        // Ripristina il volume originale se salvato
         if (originalVolume != -1) {
             val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
             audioManager.setStreamVolume(AudioManager.STREAM_RING, originalVolume, 0)

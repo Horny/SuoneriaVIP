@@ -26,14 +26,14 @@ class VipContactsManager(context: Context) {
     }
 
     fun isVip(incomingNumber: String?): Boolean {
-        if (incomingNumber.isNull_or_Empty()) return false
+        if (incomingNumber.isNullOrEmpty()) return false
         val cleanIncoming = sanitizeNumber(incomingNumber)
-        return getVipNumbers().any { cleanIncoming.contains(it) || it.contains(cleanIncoming) }
+        return getVipNumbers().any { it -> cleanIncoming.contains(it) || it.contains(cleanIncoming) }
     }
 
     private fun sanitizeNumber(num: String): String {
         return num.replace(Regex("[^0-9+]"), "")
     }
 
-    private fun String?.isNull_or_Empty(): Boolean = this == null || this.trim().isEmpty()
+    private fun String?.isNullOrEmpty(): Boolean = this == null || this.trim().isEmpty()
 }

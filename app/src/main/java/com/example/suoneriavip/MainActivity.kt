@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
@@ -26,7 +25,7 @@ class MainActivity : ComponentActivity() {
 
     private val requestPermissionsLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
-            val allGranted = results.values.all { it }
+            val allGranted = results.values.all { t -> t }
             if (!allGranted) {
                 Toast.makeText(this, "I permessi sono necessari per il funzionamento", Toast.LENGTH_LONG).show()
             }
@@ -131,7 +130,7 @@ fun VipScreen(vipManager: VipContactsManager, onRequestDndPermission: () -> Unit
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
-                        horizontalArrangement = SpaceBetween,
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(text = number, style = MaterialTheme.typography.bodyLarge)

@@ -28,12 +28,10 @@ class VipContactsManager(context: Context) {
     fun isVip(incomingNumber: String?): Boolean {
         if (incomingNumber.isNullOrEmpty()) return false
         val cleanIncoming = sanitizeNumber(incomingNumber)
-        return getVipNumbers().any { it -> cleanIncoming.contains(it) || it.contains(cleanIncoming) }
+        return getVipNumbers().any { vip -> cleanIncoming.contains(vip) || vip.contains(cleanIncoming) }
     }
 
     private fun sanitizeNumber(num: String): String {
         return num.replace(Regex("[^0-9+]"), "")
     }
-
-    private fun String?.isNullOrEmpty(): Boolean = this == null || this.trim().isEmpty()
 }

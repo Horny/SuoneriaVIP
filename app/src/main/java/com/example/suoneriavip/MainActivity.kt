@@ -12,7 +12,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,7 +20,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 
@@ -66,10 +64,8 @@ class MainActivity : ComponentActivity() {
                                         val number = pCursor.getString(numberIndex)
                                         val name = if (nameIndex != -1) pCursor.getString(nameIndex) else "Contatto"
 
-                                        // Aggiunge il VIP formattato o pulito
                                         vipManager.addVipNumber(number)
                                         Toast.makeText(this, "Aggiunto VIP: $name", Toast.LENGTH_SHORT).show()
-                                        // Ricarica la UI ricreando l'activity o gestendo lo stato
                                         recreate()
                                     }
                                 }
@@ -250,13 +246,13 @@ fun PermissionsView(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedNameOrVerticalIfNeeded() // Standard spacing
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("Stato dei Permessi", style = MaterialTheme.typography.titleLarge)
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Text("Per funzionare correttamente, l'app necessita delle seguenti autorizzazioni di sistema:", style = MaterialTheme.typography.bodyMedium)
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         PermissionCard(
             title = "Modalità 'Non Disturbare'",
@@ -266,8 +262,6 @@ fun PermissionsView(
             onClick = onRequestDndPermission
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
-
         PermissionCard(
             title = "Stato Telefono e Chiamate",
             description = "Necessario per intercettare i numeri in arrivo in tempo reale.",
@@ -275,8 +269,6 @@ fun PermissionsView(
             buttonText = "Richiedi",
             onClick = onRequestAppPermissions
         )
-
-        Spacer(modifier = Modifier.height(12.dp))
 
         PermissionCard(
             title = "Accesso ai Contatti",

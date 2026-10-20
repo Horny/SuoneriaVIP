@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Horny/SuoneriaVIP/main/app/src/main/res/mipmap-xxhdpi/ic_launcher.png" alt="Icona Suoneria VIP" width="120" height="120">
+  <img src="https://api.iconify.design/lucide:bell-ring.svg?color=%23455A64&width=120&height=120" alt="Suoneria VIP Icon">
 </p>
 
 <h1 align="center">Suoneria VIP</h1>
@@ -27,7 +27,7 @@
 <br><hr><br>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Horny/SuoneriaVIP/main/app/src/main/res/mipmap-xxhdpi/ic_launcher.png" alt="Suoneria VIP Icon" width="120" height="120">
+  <img src="https://api.iconify.design/lucide:bell-ring.svg?color=%23455A64&width=120&height=120" alt="Suoneria VIP Icon">
 </p>
 
 <h1 align="center">Suoneria VIP (English Version)</h1>

@@ -13,12 +13,10 @@
 
 ---
 
-## 🎨 Icona dell'App
-L'applicazione utilizza un'icona personalizzata per essere facilmente individuata nel drawer delle applicazioni:
-
-<p align="center">
-  <img src="app/src/main/res/mipmap-xxhdpi/ic_launcher.png" alt="Icona Suoneria VIP" width="120" height="120">
-</p>
+## 🎨 Icona dell'App (Adaptive Icon)
+L'applicazione utilizza un'icona vettoriale adattiva moderna composta da:
+* **Sfondo (`ic_launcher_background.xml`):** Un blocco con tonalità scura (`#FF455A64`).
+* **Primo piano (`ic_launcher_foreground.xml`):** Una grafica vettoriale stilizzata a forma di campana con onde di notifica.
 
 ---
 
@@ -46,10 +44,10 @@ L'applicazione utilizza un'icona personalizzata per essere facilmente individuat
 
 ---
 
-## 🎨 App Icon
-<p align="center">
-  <img src="app/src/main/res/mipmap-xxhdpi/ic_launcher.png" alt="Suoneria VIP Icon" width="120" height="120">
-</p>
+## 🎨 App Icon (Adaptive Icon)
+The app uses a modern adaptive vector icon consisting of:
+* **Background (`ic_launcher_background.xml`):** A dark themed solid block (`#FF455A64`).
+* **Foreground (`ic_launcher_foreground.xml`):** A stylized vector bell icon with notification waves.
 
 ---
 

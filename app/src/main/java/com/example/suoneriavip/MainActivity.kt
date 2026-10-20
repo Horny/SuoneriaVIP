@@ -15,17 +15,21 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var vipManager: VipContactsManager
+    private lateinit var pinManager: PinManager
 
     private val requestPermissionsLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
@@ -35,7 +39,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-    // Launcher per aprire la rubrica nativa e selezionare un contatto
     val pickContactLauncher = registerForActivityResult(ActivityResultContracts.PickContact()) { contactUri ->
         contactUri?.let { uri ->
             val cursor = contentResolver.query(uri, null, null, null, null)
@@ -82,6 +85,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         vipManager = VipContactsManager(this)
+        pinManager = PinManager(this)
 
         checkAndRequestPermissions()
 
@@ -91,19 +95,16 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainScreen(
+                    AppRoot(
                         vipManager = vipManager,
+                        pinManager = pinManager,
                         context = this,
-                        onPickContact = {
-                            pickContactLauncher.launch(null)
-                        },
+                        onPickContact = { pickContactLauncher.launch(null) },
                         onRequestDndPermission = {
                             val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
                             startActivity(intent)
                         },
-                        onRequestAppPermissions = {
-                            checkAndRequestPermissions()
-                        }
+                        onRequestAppPermissions = { checkAndRequestPermissions() }
                     )
                 }
             }
@@ -120,10 +121,126 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@Composable
+fun AppRoot(
+    vipManager: VipContactsManager,
+    pinManager: PinManager,
+    context: Context,
+    onPickContact: () -> Unit,
+    onRequestDndPermission: () -> Unit,
+    onRequestAppPermissions: () -> Unit
+) {
+    var isUnlocked by remember { mutableStateOf(false) }
+    val savedPin = pinManager.getVipNumbers() // check if pin exists
+    var pinConfigured by remember { mutableStateOf(pinManager.getSavedPin() != null) }
+
+    if (!pinConfigured) {
+        SetupPinScreen(pinManager = pinManager, onPinSet = { pinConfigured = true })
+    } else if (!isUnlocked) {
+        UnlockScreen(pinManager = pinManager, onUnlocked = { isUnlocked = true })
+    } else {
+        MainScreen(
+            vipManager = vipManager,
+            pinManager = pinManager,
+            context = context,
+            onPickContact = onPickContact,
+            onRequestDndPermission = onRequestDndPermission,
+            onRequestAppPermissions = onRequestAppPermissions
+        )
+    }
+}
+
+@Composable
+fun SetupPinScreen(pinManager: PinManager, onPinSet: () -> Unit) {
+    var pinInput by remember { mutableStateOf("") }
+    var errorMsg by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Crea un PIN di sicurezza", style = MaterialTheme.typography.titleLarge)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("Inserisci un PIN numerico per proteggere l'accesso all'app.", style = MaterialTheme.typography.bodyMedium)
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        OutlinedTextField(
+            value = pinInput,
+            onValueChange = { pinInput = it },
+            label = { Text("Inserisci PIN") },
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+            singleLine = true
+        )
+
+        if (errorMsg.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(errorMsg, color = MaterialTheme.colorScheme.error)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = {
+            if (pinInput.length >= 4) {
+                pinManager.setPin(pinInput)
+                onPinSet()
+            } else {
+                errorMsg = "Il PIN deve essere di almeno 4 cifre"
+            }
+        }) {
+            Text("Salva PIN")
+        }
+    }
+}
+
+@Composable
+fun UnlockScreen(pinManager: PinManager, onUnlocked: () -> Unit) {
+    var pinInput by remember { mutableStateOf("") }
+    var errorMsg by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("🔒 App Protetta da PIN", style = MaterialTheme.typography.titleLarge)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = pinInput,
+            onValueChange = { pinInput = it },
+            label = { Text("Inserisci PIN") },
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+            singleLine = true
+        )
+
+        if (errorMsg.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(errorMsg, color = MaterialTheme.colorScheme.error)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = {
+            if (pinManager.checkPin(pinInput)) {
+                onUnlocked()
+            } else {
+                errorMsg = "PIN errato"
+            }
+        }) {
+            Text("Sblocca")
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     vipManager: VipContactsManager,
+    pinManager: PinManager,
     context: Context,
     onPickContact: () -> Unit,
     onRequestDndPermission: () -> Unit,
@@ -140,7 +257,7 @@ fun MainScreen(
             NavigationBar {
                 NavigationBarItem(
                     icon = { Text("⭐") },
-                    label = { Text("Contatti VIP") },
+                    label = { Text("Contatti") },
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 }
                 )
@@ -150,12 +267,18 @@ fun MainScreen(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 }
                 )
+                NavigationBarItem(
+                    icon = { Text("⚙️") },
+                    label = { Text("Sicurezza") },
+                    selected = selectedTab == 2,
+                    onClick = { selectedTab = 2 }
+                )
             }
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
-            if (selectedTab == 0) {
-                VipContactsView(
+            when (selectedTab) {
+                0 -> VipContactsView(
                     vipList = vipList,
                     onPickContact = onPickContact,
                     onRemoveVip = { number ->
@@ -163,13 +286,69 @@ fun MainScreen(
                         vipList = vipManager.getVipNumbers().toList()
                     }
                 )
-            } else {
-                PermissionsView(
+                1 -> PermissionsView(
                     context = context,
                     onRequestDndPermission = onRequestDndPermission,
                     onRequestAppPermissions = onRequestAppPermissions
                 )
+                2 -> SecurityView(pinManager = pinManager)
             }
+        }
+    }
+}
+
+@Composable
+fun SecurityView(pinManager: PinManager) {
+    var currentPin by remember { mutableStateOf("") }
+    var newPin by remember { mutableStateOf("") }
+    var message by remember { mutableStateOf("") }
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Text("Modifica PIN di Sicurezza", style = MaterialTheme.typography.titleLarge)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = currentPin,
+            onValueChange = { currentPin = it },
+            label = { Text("PIN Attuale") },
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = newPin,
+            onValueChange = { newPin = it },
+            label = { Text("Nuovo PIN (min. 4 cifre)") },
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        if (message.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(message, color = MaterialTheme.colorScheme.primary)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = {
+            if (pinManager.checkPin(currentPin)) {
+                if (newPin.length >= 4) {
+                    pinManager.setPin(newPin)
+                    message = "PIN modificato con successo!"
+                    currentPin = ""
+                    newPin = ""
+                } else {
+                    message = "Il nuovo PIN deve essere di almeno 4 cifre"
+                }
+            } else {
+                message = "Il PIN attuale non è corretto"
+            }
+        }, modifier = Modifier.align(Alignment.End)) {
+            Text("Aggiorna PIN")
         }
     }
 }

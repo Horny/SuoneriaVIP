@@ -131,7 +131,6 @@ fun AppRoot(
     onRequestAppPermissions: () -> Unit
 ) {
     var isUnlocked by remember { mutableStateOf(false) }
-    val savedPin = pinManager.getVipNumbers() // check if pin exists
     var pinConfigured by remember { mutableStateOf(pinManager.getSavedPin() != null) }
 
     if (!pinConfigured) {

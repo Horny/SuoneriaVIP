@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://api.iconify.design/lucide:bell-ring.svg?color=%23455A64&width=120&height=120" alt="Suoneria VIP Icon">
+  <img src="icon.png" alt="Icona Suoneria VIP" width="120" height="120">
 </p>
 
 <h1 align="center">Suoneria VIP</h1>
